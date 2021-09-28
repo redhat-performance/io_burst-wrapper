@@ -1,33 +1,15 @@
 #!/bin/bash
-#
-#                         License
-#
-# Copyright (C) 2021  David Valin dvalin@redhat.com
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
-# Automate the io_burst workload
-#
+
 arguments="$@"
 chars=`echo $0 | awk -v RS='/' 'END{print NR-1}'`
 run_dir=`echo $0 | cut -d'/' -f 1-${chars}`
 tools_git="https://github.com/dvalinrh/test_tools"
 test_name="io_burst"
 active_time=60
+offset=0
 io_size="4k"
 opt_type="read"
+random=0
 run_time=1200
 sleep_time=60
 threads=1
@@ -48,8 +30,10 @@ usage()
 	echo "Usage:"
         echo "  --active_time <seconds>  How long to to be active for before sleeping\n"
         echo "  --disks <disk1>,<disk2>  Comma separated list of disks to use\n"
+	echo "  --offset <Gig>:  Offset to start each thread at from the previous thread"
         echo "  --io_size <size>  Size of IO\n"
         echo "  --opt_type read/write/rw  Type of io to do.\n"
+	echo "	--random  Perform random operations"
         echo "  --run_time <seconds>  How long the test is to run for.\n"
         echo "  --sleep_time <seconds>  How long to sleep between bursts.\n"
         echo "  --threads <# threads>,<# threads>  Comma separated list of threads to use\n"
@@ -70,6 +54,8 @@ execute_via_shell()
 	gcc -lpthread -o burst_io burst_io.c
 	mkdir burst_io_results
 
+	pwd
+	echo burst_io_results/$results_file
 	./burst_io $options >> burst_io_results/$results_file
 	popd
 }
@@ -82,6 +68,7 @@ source test_tools/general_setup "$@"
 ARGUMENT_LIST=(
 	"active_time"
 	"disks"
+	"offset"
 	"io_size"
 	"opt_type"
 	"run_time"
@@ -91,6 +78,7 @@ ARGUMENT_LIST=(
 )
 
 NO_ARGUMENTS=(
+	"random"
 	"usage"
 )
 
@@ -131,6 +119,11 @@ while [[ $# -gt 0 ]]; do
 			fi
 			shift 2
 		;;
+		--offset)
+			offset=${2}
+			options="${options} ${1} ${2}"
+			shift 2
+		;;
 		--io_size)
 			io_size=${2}
 			options="${options} ${1} ${2}"
@@ -140,6 +133,11 @@ while [[ $# -gt 0 ]]; do
 			opt_type=${2}
 			options="${options} ${1} ${2}"
 			shift 2
+		;;
+		--random)
+			options="${options} ${1}"
+			random=1
+			shift 1
 		;;
 		--run_time)
 			run_time=${2}
@@ -191,7 +189,7 @@ if [[ $to_configuration != "" ]]; then
 	done
 fi
 
-test_name="${test_name}_disk_size=${disk_size}_at=${active_time}_st=${sleep_time}_rt=${run_time}_tds=${threads}_type=${opt_type}_size=${io_size}"
+test_name="${test_name}_disk_size=${disk_size}_at=${active_time}_st=${sleep_time}_rt=${run_time}_tds=${threads}_type=${opt_type}_size=${io_size}_random=${random}_offset=${offset}"
 
 pushd test_tools
 TOOLS_BIN=`pwd`
