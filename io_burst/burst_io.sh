@@ -43,7 +43,7 @@ if [ ! -d "test_tools" ]; then
 	git clone $tools_git
 	if [ $? -ne 0 ]; then
 		echo pulling git $tools_git failed.
-		exit
+		exit 1
 	fi
 fi
 
@@ -112,7 +112,7 @@ opts=$(getopt \
 )
 
 if [ $? -ne 0 ]; then
-	exit
+	exit 1
 fi
 
 eval set --$opts
@@ -183,14 +183,14 @@ while [[ $# -gt 0 ]]; do
 		;;
 		-h)
 			echo future usage message		
-			exit
+			exit 1
 		;;
 		--)
 			break; 
 		;;
 		*)
 			echo option not found $1
-			exit
+			exit 1
 		;;
         esac
 done
@@ -244,3 +244,4 @@ if [[ -d "/var/lib/pbench-agent" ]]; then
 	tar xf /tmp/${copy_to}.tar
 	popd
 fi
+exit 0
