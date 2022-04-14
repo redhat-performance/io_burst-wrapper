@@ -38,14 +38,6 @@ threads=1
 
 options=""
 
-if [ ! -d "test_tools" ]; then
-	echo git clone $tools_git
-	git clone $tools_git
-	if [ $? -ne 0 ]; then
-		echo pulling git $tools_git failed.
-		exit 1
-	fi
-fi
 
 usage()
 {
@@ -79,6 +71,37 @@ execute_via_shell()
 	./burst_io $options >> burst_io_results/$results_file
 	popd
 }
+
+#
+# Clone the repo that contains the common code and tools
+#
+found=0
+for arg in "$@"; do
+	if [ $found -eq 1 ]; then
+		tools_git=$arg
+		break;
+	fi
+	if [[ $arg == "--tools_git" ]]; then
+		found=1
+	fi
+
+	#
+	# Check to see if usage is requested, if so call usage.
+	# We do this so we do not pull in the common git.
+	#
+	if [[ $arg == "--usage" ]]; then
+		usage $0
+	fi
+done
+
+if [ ! -d "test_tools" ]; then
+	echo git clone $tools_git
+	git clone $tools_git
+	if [ $? -ne 0 ]; then
+		echo pulling git $tools_git failed.
+		exit 1
+	fi
+fi
 
 source test_tools/general_setup "$@" 
 
