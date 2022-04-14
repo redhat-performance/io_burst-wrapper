@@ -75,6 +75,7 @@ execute_via_shell()
 #
 # Clone the repo that contains the common code and tools
 #
+show_usage=0
 found=0
 for arg in "$@"; do
 	if [ $found -eq 1 ]; then
@@ -90,7 +91,7 @@ for arg in "$@"; do
 	# We do this so we do not pull in the common git.
 	#
 	if [[ $arg == "--usage" ]]; then
-		usage $0
+		show_usage=1
 	fi
 done
 
@@ -101,6 +102,10 @@ if [ ! -d "test_tools" ]; then
 		echo pulling git $tools_git failed.
 		exit 1
 	fi
+fi
+
+if [ $show_usage -eq 1 ]; then
+	usage $0
 fi
 
 source test_tools/general_setup "$@" 
