@@ -23,9 +23,15 @@
 #
 
 arguments="$@"
-chars=`echo $0 | awk -v RS='/' 'END{print NR-1}'`
-run_dir=`echo $0 | cut -d'/' -f 1-${chars}`
-tools_git="https://github.com/dvalinrh/test_tools"
+
+if [[ $0 == "./"* ]]; then
+	run_dir=`pwd`
+else
+	chars=`echo $0 | awk -v RS='/' 'END{print NR-1}'`
+	run_dir=`echo $0 | cut -d'/' -f 1-${chars}`
+fi
+
+tools_git="https://github.com/redhat-performance/test_tools-wrappers"
 test_name="io_burst"
 active_time=60
 offset=0
@@ -96,8 +102,8 @@ for arg in "$@"; do
 done
 
 if [ ! -d "test_tools" ]; then
-	echo git clone $tools_git
-	git clone $tools_git
+	echo git clone $tools_git test_tools
+	git clone $tools_git test_tools
 	if [ $? -ne 0 ]; then
 		echo pulling git $tools_git failed.
 		exit 1
