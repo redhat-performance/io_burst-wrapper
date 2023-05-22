@@ -44,6 +44,11 @@ threads=1
 
 options=""
 
+error_out()
+{
+	echo Error: $1
+	exit 1
+}
 
 usage()
 {
@@ -72,9 +77,15 @@ execute_via_shell()
 {
 	pushd $run_dir
 	gcc -lpthread -o burst_io burst_io.c
+	if [ $? -ne 0 ]; then
+		error_out "gcc compilation failed"
+	fi
 	mkdir burst_io_results
 
 	./burst_io $options >> burst_io_results/$results_file
+	if [ $? -ne 0 ]; then
+		error_out "Execution of burst_io failed"
+	fi
 	popd
 }
 
@@ -105,8 +116,7 @@ if [ ! -d "test_tools" ]; then
 	echo git clone $tools_git test_tools
 	git clone $tools_git test_tools
 	if [ $? -ne 0 ]; then
-		echo pulling git $tools_git failed.
-		exit 1
+		error_out "pulling git $tools_git failed."
 	fi
 fi
 
@@ -145,8 +155,12 @@ opts=$(getopt \
     -- "$@"
 )
 
+if [ $# -eq 1 ]; then
+	usage
+fi
+
 if [ $? -ne 0 ]; then
-	exit 1
+	error_out "Option config failure"
 fi
 
 eval set --$opts
@@ -216,15 +230,13 @@ while [[ $# -gt 0 ]]; do
 			usage
 		;;
 		-h)
-			echo future usage message		
-			exit 1
+			usage
 		;;
 		--)
 			break; 
 		;;
 		*)
-			echo option not found $1
-			exit 1
+			error_out "option not found $1"
 		;;
         esac
 done
