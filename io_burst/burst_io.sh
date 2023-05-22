@@ -78,7 +78,7 @@ execute_via_shell()
 	pushd $run_dir
 	gcc -lpthread -o burst_io burst_io.c
 	if [ $? -ne 0 ]; then
-		error_out "gcc compilastion failed"
+		error_out "gcc compilation failed"
 	fi
 	mkdir burst_io_results
 
@@ -117,7 +117,6 @@ if [ ! -d "test_tools" ]; then
 	git clone $tools_git test_tools
 	if [ $? -ne 0 ]; then
 		error_out "pulling git $tools_git failed."
-		exit 1
 	fi
 fi
 
