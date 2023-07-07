@@ -21,14 +21,87 @@
 #
 # Automate the io_burst workload
 #
+test_name_run="burst_io"
+results_file=""
+disk_options=""
 
 arguments="$@"
 
+#
+# Need to preload the test tools DJV
+#
+provide_disks()
+{
+	echo You need to designate disks, following are currently not mounted.
+	tools_bin/grab_disks grab_disks
+	cat disks
+	echo "Enter comma separated list of devices to use: "
+	read devices_to_use
+	device_list=`echo $devices_to_use | sed "s/,/,\/dev\//g"`
+	device_list=/dev/${device_list}
+	disk_options="--disks ${device_list}"
+}
+
+gen_args_back="$@"
+disks_found=0
+i=1
+j=$#
+while [ $i -le $j ]
+do
+        #
+        # Ansible causing problems again, getting passed }} for some reason from random workloads, filter it out.
+        #
+        case "$1" in
+		--disks)
+		disks_found=1
+			break
+		;;
+		--)
+			break
+		;;
+		*)
+			i=$((i + 1))
+			shift 1
+		;;
+	esac
+done
+
+if [ $disks_found -eq 0 ]; then
+	provide_disks
+fi
+set -- ${gen_args_back} ${disk_options}
+
+#
+# First see if --disks has been provided.
+#
+if [ ! -f "/tmp/${test_name_run}.out" ]; then
+        command="${0} $@ $disk_options"
+	echo $commanbd > /tmp/dave
+        $command &> /tmp/${test_name_run}.out
+        rtc=$?
+        cat /tmp/${test_name_run}.out
+        rm /tmp/${test_name_run}.out
+        exit $rtc
+fi
+
+curdir=`pwd`
 if [[ $0 == "./"* ]]; then
-	run_dir=`pwd`
+	chars=`echo $0 | awk -v RS='/' 'END{print NR-1}'`
+	if [[ $chars == 1 ]]; then
+		run_dir=`pwd`
+	else
+		run_dir=`echo $0 | cut -d'/' -f 1-${chars} | cut -d'.' -f2-`
+		run_dir="${curdir}${run_dir}"
+	fi
+elif [[ $0 != "/"* ]]; then
+	dir=`echo $0 | rev | cut -d'/' -f2- | rev`
+	run_dir="${curdir}/${dir}"
 else
 	chars=`echo $0 | awk -v RS='/' 'END{print NR-1}'`
 	run_dir=`echo $0 | cut -d'/' -f 1-${chars}`
+	if [[ $run_dir != "/"* ]]; then
+		run_dir=${curdir}/${run_dir}
+	fi
 fi
 
 tools_git="https://github.com/redhat-performance/test_tools-wrappers"
@@ -81,7 +154,6 @@ execute_via_shell()
 		error_out "gcc compilation failed"
 	fi
 	mkdir burst_io_results
-
 	./burst_io $options >> burst_io_results/$results_file
 	if [ $? -ne 0 ]; then
 		error_out "Execution of burst_io failed"
@@ -175,6 +247,7 @@ while [[ $# -gt 0 ]]; do
 		--disks)
 			if [[ ${2} != "grab_disks" ]]; then
 				options="${options} ${1} ${2}"
+				disks_list=$2
 			else
 				$TOOLS_BIN/grab_disks grab_disks
 				disk_list=""
@@ -261,7 +334,7 @@ pushd test_tools
 TOOLS_BIN=`pwd`
 popd
 
-results_file="results_burst_io_${to_tuned_setting}"
+results_file="results_burst_io_${to_tuned_setting}.out"
 
 #
 # If a pbench user was not designated set it to $user
