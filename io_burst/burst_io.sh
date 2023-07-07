@@ -228,7 +228,6 @@ opts=$(getopt \
 )
 
 if [ $# -eq 1 ]; then
-	echo here we are
 	usage
 fi
 
