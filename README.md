@@ -13,13 +13,15 @@ Location of underlying workload: part of the github kit
 
 Packages required: gcc,bc,wget
 
-```
 To run:
+```
 [root@hawkeye ~]# git clone https://github.com/redhat-performance/io_burst-wrapper
 [root@hawkeye ~]# io_burst-wrapper/io_burst/burst_io.sh
+```
 
 The script will set the sizings based on the hardware it is being run.
 
+```
 Options
   --active_time <seconds>  How long to to be active for before sleeping
   --disks <disk1>,<disk2>  Comma separated list of disks to use
