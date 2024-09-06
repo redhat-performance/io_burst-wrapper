@@ -355,15 +355,16 @@ done
 
 cd /tmp
 $TOOLS_BIN/test_header_info --front_matter --results_file $results_file --host $to_configuration --sys_type $to_sys_type --tuned $to_tuned_setting --results_version $burst_io_version --test_name $test_name_run
-cat  $run_dir/burst_io_results/$results_file >> $results_file
+cat $run_dir/burst_io_results/$results_file >> $results_file
 results=`grep 0: $results_file`
 test_results="Ran"
-if [ $?0 -ne 0 ]; then
+if [ $? -ne 0 ]; then
 	test_reults="Failed"
 else
+	re='^[0-9]+$'
 	for i in $results; do
 		value=`echo $i | cut -d':' -f 2`
-		if [[ $value != ?(-)+([[:digit:]]) ]]; then
+		if ! [[ $val =~ $re ]] ; then
 			test_reults="Failed"
 			break
 		fi
