@@ -315,8 +315,9 @@ main(int argc, char **argv)
 		printf("Need to designate at least one disk\n");
 		exit(1);
 	}
-	printf("Offset %ld\n", test_args.offset);
-	printf("Random operations: %d\n", test_args.random);
+	printf("# Test meta data start\n");
+	printf("# Offset %ld\n", test_args.offset);
+	printf("# Random operations: %d\n", test_args.random);
 	if ( strcmp(opt_type, "read") == 0 )
 		test_args.oper_type = READ;
 	if ( strcmp(opt_type, "write") == 0 )
@@ -324,17 +325,20 @@ main(int argc, char **argv)
 	if ( strcmp(opt_type, "rw") == 0 )
 		test_args.oper_type = RW;
 	tptr = threads;
-	printf("IO requested: %s\n", opt_type);
-	printf("IO size: %s\n", opt_size);
-	printf("Run time: %d\n", test_args.run_time);
-	printf("Sleep time: %d\n", test_args.sleep_time);
-	printf("Active time: %d\n", test_args.active_time);
+	printf("# IO requested: %s\n", opt_type);
+	printf("# IO size: %s\n", opt_size);
+	printf("# Run time: %d\n", test_args.run_time);
+	printf("# Sleep time: %d\n", test_args.sleep_time);
+	printf("# Active time: %d\n", test_args.active_time);
+	printf("# Test meta data end\n");
 
 	for (;;) {
+		printf("# Test meta data start\n");
 		tptr1 = strchr(tptr, ',');
 		test_args.threads = atoi(tptr);
 		total_threads = test_args.threads;
 		ptr=test_args.disks;
+
 		if (disk_count == 0) {
 			for (;;) {
 				ptr1 = strchr(ptr, ',');
@@ -347,7 +351,7 @@ main(int argc, char **argv)
 				fgets(buffer, 1024, fd);
 				fclose(fd);
 				disk_to_use[disk_count++].disk_size = atoll(buffer);
-				printf("%s %ld\n", disk_to_use[disk_count - 1].disk_name, disk_to_use[disk_count - 1].disk_size);
+				printf("# %s %ld\n", disk_to_use[disk_count - 1].disk_name, disk_to_use[disk_count - 1].disk_size);
 				if (!ptr1)
 					break;
 				ptr = ptr1 + 1;
@@ -355,7 +359,7 @@ main(int argc, char **argv)
 		}
 		grand_total_threads = total_threads * disk_count;
 
-		printf("total threads: %d\n", grand_total_threads);
+		printf("# total threads: %d\n", grand_total_threads);
 		test_args.io_size = convert_size(opt_size);
  		pthread_barrier_init (&barrier, NULL, grand_total_threads);
 	
@@ -385,7 +389,9 @@ main(int argc, char **argv)
 		for (count = 0; count < grand_total_threads;  count++) {
 			pthread_join(run_info[count].tids, NULL);
 		}
-		printf("time period: %d\n", run_info[count1].run_time);
+		printf("#time period: %d\n", run_info[count1].run_time);
+		printf("# Test meta data end\n");
+		
 		printf("Disks");
 		for (count1 = 0; count1 < grand_total_threads;  count1++) {
 			printf(":%s", run_info[count1].disks);

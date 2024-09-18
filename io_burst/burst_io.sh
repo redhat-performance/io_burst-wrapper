@@ -24,6 +24,7 @@
 test_name_run="burst_io"
 results_file=""
 disk_options=""
+burst_io_version="1.0"
 
 arguments="$@"
 
@@ -353,9 +354,27 @@ do
 done
 
 cd /tmp
-mv  $run_dir/burst_io_results/$results_file $results_file
+$TOOLS_BIN/test_header_info --front_matter --results_file $results_file --host $to_configuration --sys_type $to_sys_type --tuned $to_tuned_setting --results_version $burst_io_version --test_name $test_name_run
+cat $run_dir/burst_io_results/$results_file >> $results_file
+results=`grep 0: $results_file`
+test_results="Ran"
+if [ $? -ne 0 ]; then
+	test_reults="Failed"
+else
+	re='^[0-9]+$'
+	for i in $results; do
+		value=`echo $i | cut -d':' -f 2`
+		if ! [[ $val =~ $re ]] ; then
+			test_reults="Failed"
+			break
+		fi
+	done
+fi
+echo $results >> test_results_report
 tar cf /tmp/${results_file}.tar $results_file
-if [[ -d "/var/lib/pbench-agent" ]]; then
+
+${curdir}/test_tools/save_results --curdir $curdir --home_root $to_home_root  --test_name $test_name --tuned_setting $to_tuned_setting --version $burst_io_version --user $to_user --results $results_file --other_files test_results_report
+if [[ -d "/var/lib/pbench-agent" ]]; then 
 	copy_to=`echo ${results_file} | sed "s/results_burst/results_pbench_burst/g"`
 	cp -R /tmp/${results_file}.tar ${copy_to}.tar
 	change_to=`ls -drt /var/lib/pbench-agent/* | grep pbench-user-benchmark | grep io_burst | grep -v tar | grep -v copied | tail -1`
