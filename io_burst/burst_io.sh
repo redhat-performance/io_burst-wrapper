@@ -141,12 +141,6 @@ usage()
 	source test_tools/general_setup --usage
 }
 
-execute_via_pbench()
-{
-	echo $TOOLS_BIN/execute_pbench --cmd_executing "$0" $arguments --test $test_name --spacing 11 --results_dir io_burst >> /tmp/debugging
-	$TOOLS_BIN/execute_pbench --cmd_executing "$0" $arguments --test $test_name --spacing 11 --results_dir io_burst
-}
-
 execute_via_shell()
 {
 	pushd $run_dir
@@ -337,21 +331,7 @@ popd
 
 results_file="results_burst_io_${to_tuned_setting}.out"
 
-#
-# If a pbench user was not designated set it to $user
-#
-if [[ $to_puser == "noone" ]]; then
-	to_puser=$user
-fi
-
-for iteration in  `seq 1 1 $to_times_to_run`
-do
-	if [ $to_pbench -eq 1 ]; then
-		execute_via_pbench
-	else
-		execute_via_shell
-	fi
-done
+execute_via_shell
 
 cd /tmp
 $TOOLS_BIN/test_header_info --front_matter --results_file $results_file --host $to_configuration --sys_type $to_sys_type --tuned $to_tuned_setting --results_version $burst_io_version --test_name $test_name_run
@@ -374,12 +354,5 @@ echo $results >> test_results_report
 tar cf /tmp/${results_file}.tar $results_file
 
 ${curdir}/test_tools/save_results --curdir $curdir --home_root $to_home_root  --test_name $test_name --tuned_setting $to_tuned_setting --version $burst_io_version --user $to_user --results $results_file --other_files test_results_report
-if [[ -d "/var/lib/pbench-agent" ]]; then 
-	copy_to=`echo ${results_file} | sed "s/results_burst/results_pbench_burst/g"`
-	cp -R /tmp/${results_file}.tar ${copy_to}.tar
-	change_to=`ls -drt /var/lib/pbench-agent/* | grep pbench-user-benchmark | grep io_burst | grep -v tar | grep -v copied | tail -1`
-	pushd ${change_to}
-	tar xf /tmp/${copy_to}.tar
-	popd
-fi
+
 exit 0
