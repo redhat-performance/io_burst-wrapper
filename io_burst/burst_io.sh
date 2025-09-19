@@ -387,6 +387,6 @@ fi
 echo $results >> test_results_report
 tar cf /tmp/${results_file}.tar $results_file
 
-${curdir}/test_tools/save_results --curdir $curdir --home_root $to_home_root  --test_name $test_name --tuned_setting $to_tuned_setting --version $burst_io_version --user $to_user --results $results_file --other_files test_results_report
+${curdir}/test_tools/save_results --curdir $curdir --home_root $to_home_root  --test_name $test_name --tuned_setting $to_tuned_setting --version $burst_io_version --user $to_user --results $results_file --other_files test_results_report,${pcpdir}
 
 exit 0
