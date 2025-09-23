@@ -121,6 +121,12 @@ options=""
 error_out()
 {
 	echo Error: $1
+	# If we're using PCP, stop logging and shut down
+	if [[ $to_use_pcp -eq 1 ]]; then
+        echo "Stop PCP"
+        stop_pcp
+		shutdown_pcp
+    fi 
 	exit 1
 }
 
@@ -149,11 +155,27 @@ execute_via_shell()
 		error_out "gcc compilation failed"
 	fi
 	mkdir burst_io_results
+
+	# If we're using PCP start logging
+    if [[ $to_use_pcp -eq 1 ]]; then
+        echo "Start PCP"
+		pcpdir=`pwd`/burst_io_results/pcp_`date "+%Y.%m.%d-%H.%M.%S"`
+		mkdir ${pcpdir}
+        start_pcp ${pcpdir}/ ${test_name} $pcp_cfg
+    fi
+ 
 	./burst_io $options >> burst_io_results/$results_file
 	if [ $? -ne 0 ]; then
 		error_out "Execution of burst_io failed"
 	fi
-	popd
+ 	
+	# If we're using PCP, stop logging
+	if [[ $to_use_pcp -eq 1 ]]; then
+        echo "Stop PCP"
+        stop_pcp
+    fi 
+
+popd
 }
 
 #
@@ -331,7 +353,19 @@ popd
 
 results_file="results_burst_io_${to_tuned_setting}.out"
 
+# Get PCP setup if we're using it
+if [[ $to_use_pcp -eq 1 ]]; then 
+    source $TOOLS_BIN/pcp/pcp_commands.inc
+    setup_pcp
+    pcp_cfg=$TOOLS_BIN/pcp/default.cfg
+fi                      
+
 execute_via_shell
+
+# Shutdown PCP and clean up after ourselves
+if [[ $to_use_pcp -eq 1 ]]; then
+    shutdown_pcp
+fi
 
 cd /tmp
 $TOOLS_BIN/test_header_info --front_matter --results_file $results_file --host $to_configuration --sys_type $to_sys_type --tuned $to_tuned_setting --results_version $burst_io_version --test_name $test_name_run
@@ -353,6 +387,6 @@ fi
 echo $results >> test_results_report
 tar cf /tmp/${results_file}.tar $results_file
 
-${curdir}/test_tools/save_results --curdir $curdir --home_root $to_home_root  --test_name $test_name --tuned_setting $to_tuned_setting --version $burst_io_version --user $to_user --results $results_file --other_files test_results_report
+${curdir}/test_tools/save_results --curdir $curdir --home_root $to_home_root  --test_name $test_name --tuned_setting $to_tuned_setting --version $burst_io_version --user $to_user --results $results_file --other_files test_results_report,${pcpdir}
 
 exit 0
