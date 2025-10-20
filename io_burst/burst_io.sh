@@ -333,6 +333,9 @@ done
 
 # Install needed packages based on what's listed in the wrapper's json file
 ${TOOLS_BIN}/package_tool --wrapper_config ${run_dir}/io_burst-wrapper.json
+if [[ $? -ne 0 ]]; then
+        exit_out "package_tool reported failure installing dependencies." 1
+fi
 
 #
 # Get the disk size if present.
