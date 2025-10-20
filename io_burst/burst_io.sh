@@ -330,6 +330,10 @@ while [[ $# -gt 0 ]]; do
 		;;
         esac
 done
+
+# Install needed packages based on what's listed in the wrapper's json file
+${TOOLS_BIN}/package_tool --wrapper_config ${run_dir}/io_burst-wrapper.json
+
 #
 # Get the disk size if present.
 #
