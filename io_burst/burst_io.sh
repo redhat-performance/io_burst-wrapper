@@ -332,7 +332,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Install needed packages based on what's listed in the wrapper's json file
-${TOOLS_BIN}/package_tool ---no_packages $to_no_pkg_install -wrapper_config ${run_dir}/io_burst-wrapper.json
+${TOOLS_BIN}/package_tool --no_packages $to_no_pkg_install -wrapper_config ${run_dir}/io_burst-wrapper.json
 if [[ $? -ne 0 ]]; then
         exit_out "package_tool reported failure installing dependencies." 1
 fi
