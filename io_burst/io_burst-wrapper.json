@@ -1,0 +1,27 @@
+{
+  "dependencies": {
+    "rhel": [
+      "bc",
+      "gcc",
+      "git",
+      "make",
+      "perf",
+      "unzip",
+      "zip",
+      "pcp-zeroconf",
+      "pcp-pmda-openmetrics",
+      "pcp-pmda-denki"
+    ],
+    "ubuntu": [
+      "bc",
+      "gcc",
+      "git",
+      "make",
+      "linux-tools-generic",
+      "unzip",
+      "zip",
+      "pcp-zeroconf"
+    ]
+  }
+}
+
